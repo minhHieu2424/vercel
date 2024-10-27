@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cart      Cart?
+  orders    Order[]
+  role      Role     @default(user)
+}
+
+enum Role {
+  user
+  admin
+}
+
+model Cart {
+  id         Int        @id @default(autoincrement())
+  totalItems Int        @default(0)
+  totalPrice Float      @default(0.0)
+  status     String     @default("CTT") // CTT: Chưa thanh toán, SUCCESS: Đã mua
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  user       User       @relation(fields: [userId], references: [id])
+  userId     Int        @unique
+  cartItems  CartItem[]
+}
+
+model Product {
+  id          Int        @id @default(autoincrement())
+  name        String
+  price       Float
+  stock       Int        @default(0)
+  description String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+  categoryId  Int?       
+  category    Category?  @relation(fields: [categoryId], references: [id])
+}
+
+model CartItem {
+  id        Int     @id @default(autoincrement())
+  quantity  Int
+
+  cart      Cart    @relation(fields: [cartId], references: [id])
+  cartId    Int
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+
+  @@unique([cartId, productId])
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  products Product[]
+}
+
+model Order {
+  id         Int       @id @default(autoincrement())
+  totalItems Int       @default(0)
+  totalPrice Float     @default(0.0)
+  status     String    @default("ĐM") // ĐM: Đã mua
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  user       User      @relation(fields: [userId], references: [id])
+  userId     Int
+  orderItems OrderItem[]
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  quantity  Int
+
+  order     Order   @relation(fields: [orderId], references: [id])
+  orderId   Int
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+
+  @@unique([orderId, productId])
+}

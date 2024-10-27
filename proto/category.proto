@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package category;
+
+service CategoryService {
+  rpc Create (CreateCategory) returns (Category) {}
+  rpc FindOne (CategoryById) returns (Category) {}
+  rpc FindAll (Empty) returns (Categories) {}
+}
+
+message Empty {}
+
+message CategoryById {
+  int32 id = 1;
+}
+
+message Category {
+  int32 id = 1;
+  string name = 2;
+}
+
+message Categories {
+  repeated Category categories = 1;
+}
+
+message CreateCategory {
+  string name = 1;
+}
